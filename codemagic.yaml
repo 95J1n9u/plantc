@@ -21,11 +21,13 @@ workflows:
             -scheme Runner \
             -sdk iphoneos \
             -configuration Release \
-            DEVELOPMENT_TEAM="" \
+            -archivePath build/Runner.xcarchive \
             CODE_SIGN_STYLE=Automatic \
-            archivePath=build/Runner.xcarchive \
+            DEVELOPMENT_TEAM="" \
+            -allowProvisioningUpdates \
             archive
-            
+
+
       - name: Export IPA
         script: |
           xcodebuild -exportArchive \
