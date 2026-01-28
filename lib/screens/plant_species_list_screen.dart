@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import '../models/plant_species.dart';
 import '../services/plant_database_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_card.dart';
+import '../widgets/status_badge.dart';
+import '../widgets/empty_state.dart';
 import 'plant_care_guide_screen.dart';
 
 class PlantSpeciesListScreen extends StatefulWidget {
@@ -60,8 +64,11 @@ class _PlantSpeciesListScreenState extends State<PlantSpeciesListScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Center(
+          child: CircularProgressIndicator(color: AppTheme.primary),
+        ),
       );
     }
 
@@ -69,23 +76,27 @@ class _PlantSpeciesListScreenState extends State<PlantSpeciesListScreen> {
     final difficulties = ['전체', ..._databaseService.getAllDifficulties()];
 
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('식물 선택'),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        elevation: 0,
       ),
       body: Column(
         children: [
           // 검색바
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+          Container(
+            color: AppTheme.surface,
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
             child: TextField(
               decoration: InputDecoration(
                 hintText: '식물 이름 검색...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: Icon(Icons.search, color: AppTheme.primary),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                  borderSide: BorderSide.none,
                 ),
                 filled: true,
+                fillColor: Colors.white,
               ),
               onChanged: (value) {
                 setState(() {
@@ -97,90 +108,106 @@ class _PlantSpeciesListScreenState extends State<PlantSpeciesListScreen> {
           ),
 
           // 필터 칩
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          Container(
+            color: AppTheme.surface,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.only(
+                left: AppTheme.spacingMedium,
+                right: AppTheme.spacingMedium,
+                bottom: AppTheme.spacingMedium,
+              ),
+              child: Row(
+                children: [
+                  // 카테고리 필터
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      border: Border.all(color: AppTheme.divider),
+                    ),
+                    child: DropdownButton<String>(
+                      value: _selectedCategory ?? '전체',
+                      underline: const SizedBox(),
+                      items: categories.map((category) {
+                        return DropdownMenuItem(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCategory = value;
+                        });
+                        _filterSpecies();
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: AppTheme.spacingSmall),
+
+                  // 난이도 필터
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      border: Border.all(color: AppTheme.divider),
+                    ),
+                    child: DropdownButton<String>(
+                      value: _selectedDifficulty ?? '전체',
+                      underline: const SizedBox(),
+                      items: difficulties.map((difficulty) {
+                        return DropdownMenuItem(
+                          value: difficulty,
+                          child: Text(difficulty),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedDifficulty = value;
+                        });
+                        _filterSpecies();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 결과 개수
+          Padding(
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
             child: Row(
               children: [
-                // 카테고리 필터
-                DropdownButton<String>(
-                  value: _selectedCategory ?? '전체',
-                  items: categories.map((category) {
-                    return DropdownMenuItem(
-                      value: category,
-                      child: Text(category),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedCategory = value;
-                    });
-                    _filterSpecies();
-                  },
-                ),
-                const SizedBox(width: 16),
-
-                // 난이도 필터
-                DropdownButton<String>(
-                  value: _selectedDifficulty ?? '전체',
-                  items: difficulties.map((difficulty) {
-                    return DropdownMenuItem(
-                      value: difficulty,
-                      child: Text(difficulty),
-                    );
-                  }).toList(),
-                  onChanged: (value) {
-                    setState(() {
-                      _selectedDifficulty = value;
-                    });
-                    _filterSpecies();
-                  },
+                Icon(Icons.eco, size: 18, color: AppTheme.primary),
+                const SizedBox(width: AppTheme.spacingXSmall),
+                Text(
+                  '${_filteredSpecies.length}개의 식물',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textSecondary,
+                  ),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 8),
-
-          // 결과 개수
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                '${_filteredSpecies.length}개의 식물',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
           // 식물 목록
           Expanded(
             child: _filteredSpecies.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '검색 결과가 없습니다',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
+                ? EmptyState(
+                    icon: Icons.search_off,
+                    title: '검색 결과가 없습니다',
+                    message: '다른 검색어로 시도해보세요',
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(16.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppTheme.spacingMedium,
+                      vertical: AppTheme.spacingSmall,
+                    ),
                     itemCount: _filteredSpecies.length,
                     itemBuilder: (context, index) {
                       final species = _filteredSpecies[index];
@@ -219,125 +246,127 @@ class PlantSpeciesCard extends StatelessWidget {
     required this.onInfoTap,
   });
 
-  Color _getDifficultyColor() {
+  BadgeType _getDifficultyBadgeType() {
     switch (species.difficulty) {
       case '매우 쉬움':
-        return Colors.green;
+        return BadgeType.success;
       case '쉬움':
-        return Colors.lightGreen;
+        return BadgeType.success;
       case '보통':
-        return Colors.orange;
+        return BadgeType.warning;
       case '어려움':
-        return Colors.red;
+        return BadgeType.error;
       default:
-        return Colors.grey;
+        return BadgeType.neutral;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              // 식물 이미지 플레이스홀더
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Icon(
-                  _getCategoryIcon(),
-                  size: 40,
-                  color: Colors.green[700],
-                ),
-              ),
-              const SizedBox(width: 16),
-
-              // 식물 정보
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 이름
-                    Text(
-                      species.commonName,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // 학명
-                    Text(
-                      species.scientificName,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontStyle: FontStyle.italic,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // 칩들
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        // 카테고리
-                        Chip(
-                          label: Text(
-                            species.category,
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          padding: EdgeInsets.zero,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        // 난이도
-                        Chip(
-                          label: Text(
-                            species.difficulty,
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          backgroundColor: _getDifficultyColor().withOpacity(0.2),
-                          padding: EdgeInsets.zero,
-                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          visualDensity: VisualDensity.compact,
-                        ),
-                        // 식용 표시
-                        if (species.isEdible == true)
-                          const Chip(
-                            label: Text(
-                              '식용',
-                              style: TextStyle(fontSize: 11),
-                            ),
-                            backgroundColor: Color(0xFFE8F5E9),
-                            padding: EdgeInsets.zero,
-                            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            visualDensity: VisualDensity.compact,
-                          ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppTheme.spacingMedium),
+      child: AppCard(
+        elevated: true,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+          child: Padding(
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
+            child: Row(
+              children: [
+                // 식물 아이콘
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        AppTheme.primary.withOpacity(0.1),
+                        AppTheme.primary.withOpacity(0.05),
                       ],
                     ),
-                  ],
+                    borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                    border: Border.all(
+                      color: AppTheme.primary.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Icon(
+                    _getCategoryIcon(),
+                    size: 36,
+                    color: AppTheme.primary,
+                  ),
                 ),
-              ),
+                const SizedBox(width: AppTheme.spacingMedium),
 
-              // 정보 버튼
-              IconButton(
-                icon: const Icon(Icons.info_outline),
-                onPressed: onInfoTap,
-                tooltip: '케어 가이드 보기',
-              ),
-            ],
+                // 식물 정보
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 이름
+                      Text(
+                        species.commonName,
+                        style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+
+                      // 학명
+                      Text(
+                        species.scientificName,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontStyle: FontStyle.italic,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: AppTheme.spacingSmall),
+
+                      // 뱃지들
+                      Wrap(
+                        spacing: AppTheme.spacingXSmall,
+                        runSpacing: AppTheme.spacingXSmall,
+                        children: [
+                          StatusBadge(
+                            label: species.category,
+                            type: BadgeType.neutral,
+                          ),
+                          StatusBadge(
+                            label: species.difficulty,
+                            type: _getDifficultyBadgeType(),
+                          ),
+                          if (species.isEdible == true)
+                            StatusBadge(
+                              label: '식용',
+                              type: BadgeType.success,
+                              icon: Icons.restaurant,
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                // 정보 버튼
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.info.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.info_outline, color: AppTheme.info),
+                    onPressed: onInfoTap,
+                    tooltip: '케어 가이드 보기',
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
