@@ -4,6 +4,8 @@ import '../services/light_meter_service.dart';
 import '../models/plant.dart';
 import '../models/plant_species.dart';
 import '../services/plant_database_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_card.dart';
 
 class LightMeterScreen extends StatefulWidget {
   final Plant? plant; // 특정 식물 체크용 (선택사항)
@@ -97,9 +99,9 @@ class _LightMeterScreenState extends State<LightMeterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text(widget.plant != null ? '${widget.plant!.name} 광량 측정' : '광량계'),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       ),
       body: _buildBody(),
     );
@@ -207,47 +209,39 @@ class _LightMeterScreenState extends State<LightMeterScreen> {
           flex: 2,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(AppTheme.spacingLarge),
             decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 10,
-                  offset: const Offset(0, -5),
-                ),
-              ],
+              color: AppTheme.surface,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(AppTheme.radiusXLarge),
+                topRight: Radius.circular(AppTheme.radiusXLarge),
+              ),
+              boxShadow: AppTheme.elevatedShadow,
             ),
             child: Column(
               children: [
                 // 측정 버튼
-                ElevatedButton.icon(
-                  onPressed: _isMeasuring ? null : _measureLight,
-                  icon: _isMeasuring
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.camera_alt),
-                  label: Text(_isMeasuring ? '측정 중...' : '광량 측정하기'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: _isMeasuring ? null : _measureLight,
+                    icon: _isMeasuring
+                        ? const SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.camera_alt),
+                    label: Text(_isMeasuring ? '측정 중...' : '광량 측정하기'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
                     ),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: AppTheme.spacingLarge),
 
                 // 측정 결과
                 if (_measuredLux != null) ...[
@@ -284,56 +278,79 @@ class _LightMeterScreenState extends State<LightMeterScreen> {
       child: Column(
         children: [
           // Lux 값 표시
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.green, width: 2),
-            ),
+          AppCard(
+            elevated: true,
+            color: AppTheme.success.withOpacity(0.05),
             child: Column(
               children: [
-                const Text(
+                Text(
                   '측정된 광량',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  '${lux.toStringAsFixed(0)} lux',
-                  style: const TextStyle(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.green,
-                  ),
+                const SizedBox(height: AppTheme.spacingSmall),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.baseline,
+                  textBaseline: TextBaseline.alphabetic,
+                  children: [
+                    Text(
+                      lux.toStringAsFixed(0),
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.success,
+                      ),
+                    ),
+                    const SizedBox(width: AppTheme.spacingSmall),
+                    Text(
+                      'lux',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w500,
+                        color: AppTheme.success,
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  level,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
+                const SizedBox(height: AppTheme.spacingSmall),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppTheme.spacingMedium,
+                    vertical: AppTheme.spacingSmall,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.success.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusLarge),
+                  ),
+                  child: Text(
+                    level,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.success,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingMedium),
 
           // 일반 추천
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
-            ),
+          AppCard(
+            color: AppTheme.info.withOpacity(0.05),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.lightbulb, color: Colors.blue),
-                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.info.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  ),
+                  child: Icon(Icons.lightbulb_outline, color: AppTheme.info, size: 20),
+                ),
+                const SizedBox(width: AppTheme.spacingMedium),
                 Expanded(
                   child: Text(
                     recommendation,
@@ -346,7 +363,7 @@ class _LightMeterScreenState extends State<LightMeterScreen> {
 
           // 특정 식물에 대한 판단
           if (widget.plant != null && _plantSpecies != null) ...[
-            const SizedBox(height: 16),
+            const SizedBox(height: AppTheme.spacingMedium),
             _buildPlantSpecificAdvice(lux),
           ],
         ],
@@ -400,41 +417,66 @@ class _LightMeterScreenState extends State<LightMeterScreen> {
       icon = Icons.check_circle;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bgColor.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: bgColor, width: 2),
-      ),
+    return AppCard(
+      elevated: true,
+      color: bgColor.withOpacity(0.05),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: bgColor, size: 28),
-              const SizedBox(width: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: bgColor.withOpacity(0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: bgColor, size: 24),
+              ),
+              const SizedBox(width: AppTheme.spacingMedium),
               Expanded(
-                child: Text(
-                  widget.plant!.name,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: bgColor,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.plant!.name,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: bgColor,
+                          ),
+                    ),
+                    Text(
+                      _plantSpecies!.commonName,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Text(
-            advice,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            '권장 조건: ${_plantSpecies!.light.requirement}',
-            style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+          const SizedBox(height: AppTheme.spacingMedium),
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
+            decoration: BoxDecoration(
+              color: bgColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  advice,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacingSmall),
+                Text(
+                  '권장 조건: ${_plantSpecies!.light.requirement}',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
           ),
         ],
       ),
