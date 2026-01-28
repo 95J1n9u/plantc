@@ -3,6 +3,9 @@ import 'package:provider/provider.dart';
 import '../models/plant.dart';
 import '../models/plant_species.dart';
 import '../providers/plant_provider.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_card.dart';
+import '../widgets/status_badge.dart';
 import 'plant_species_list_screen.dart';
 import 'plant_care_guide_screen.dart';
 
@@ -85,9 +88,15 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
     if (_formKey.currentState!.validate()) {
       if (_selectedSpecies == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('식물 종을 선택해주세요'),
-            backgroundColor: Colors.orange,
+          SnackBar(
+            content: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(child: Text('식물 종을 선택해주세요')),
+              ],
+            ),
+            backgroundColor: AppTheme.warning,
           ),
         );
         return;
@@ -110,9 +119,15 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
       context.read<PlantProvider>().addPlant(plant);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('식물이 추가되었습니다!'),
-          backgroundColor: Colors.green,
+        SnackBar(
+          content: const Row(
+            children: [
+              Icon(Icons.check_circle, color: Colors.white),
+              SizedBox(width: 12),
+              Expanded(child: Text('식물이 추가되었습니다!')),
+            ],
+          ),
+          backgroundColor: AppTheme.success,
         ),
       );
 
@@ -123,253 +138,215 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('식물 추가'),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppTheme.spacingMedium),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // 안내 메시지
-              Card(
-                color: Colors.blue[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Row(
-                    children: [
-                      Icon(Icons.info_outline, color: Colors.blue[700]),
-                      const SizedBox(width: 12),
-                      const Expanded(
-                        child: Text(
-                          '식물 종을 선택하면 자동으로 케어 정보가 설정됩니다',
-                          style: TextStyle(fontSize: 13),
-                        ),
+              AppCard(
+                color: AppTheme.info.withOpacity(0.1),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline, color: AppTheme.info),
+                    const SizedBox(width: AppTheme.spacingMedium),
+                    const Expanded(
+                      child: Text(
+                        '식물 종을 선택하면 자동으로 케어 정보가 설정됩니다',
+                        style: TextStyle(fontSize: 13),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.spacingMedium),
 
               // 식물 종 선택 버튼
-              OutlinedButton.icon(
+              ElevatedButton.icon(
                 onPressed: _selectPlantSpecies,
                 icon: const Icon(Icons.search),
                 label: Text(
                   _selectedSpecies == null
                       ? '식물 종 선택하기'
-                      : '선택됨: ${_selectedSpecies!.commonName}',
+                      : _selectedSpecies!.commonName,
                 ),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.all(16),
-                  side: BorderSide(
-                    color: _selectedSpecies == null
-                        ? Colors.grey
-                        : Colors.green,
-                    width: 2,
-                  ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _selectedSpecies == null
+                      ? AppTheme.secondary
+                      : AppTheme.success,
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                 ),
               ),
 
               // 선택된 식물 정보 표시
               if (_selectedSpecies != null) ...[
-                const SizedBox(height: 16),
-                Card(
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              width: 60,
-                              height: 60,
-                              decoration: BoxDecoration(
-                                color: Colors.green[100],
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Icon(
-                                _getCategoryIcon(_selectedSpecies!.category),
-                                size: 32,
-                                color: Colors.green[700],
-                              ),
+                const SizedBox(height: AppTheme.spacingMedium),
+                AppCard(
+                  elevated: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: AppTheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    _selectedSpecies!.commonName,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                  Text(
-                                    _selectedSpecies!.scientificName,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontStyle: FontStyle.italic,
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Wrap(
-                                    spacing: 4,
-                                    children: [
-                                      Chip(
-                                        label: Text(
-                                          _selectedSpecies!.category,
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                        visualDensity: VisualDensity.compact,
-                                      ),
-                                      Chip(
-                                        label: Text(
-                                          _selectedSpecies!.difficulty,
-                                          style: const TextStyle(fontSize: 10),
-                                        ),
-                                        padding: EdgeInsets.zero,
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                        visualDensity: VisualDensity.compact,
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                            child: Icon(
+                              _getCategoryIcon(_selectedSpecies!.category),
+                              size: 32,
+                              color: AppTheme.primary,
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        const Divider(),
-                        const SizedBox(height: 8),
-                        _buildInfoRow(
-                          Icons.water_drop,
-                          '물주기',
-                          '$_wateringFrequency일마다 (현재 계절 기준)',
-                          Colors.blue,
-                        ),
-                        _buildInfoRow(
-                          Icons.wb_sunny,
-                          '햇빛',
-                          _selectedSpecies!.light.requirement,
-                          Colors.amber,
-                        ),
-                        _buildInfoRow(
-                          Icons.thermostat,
-                          '온도',
-                          _selectedSpecies!.temperature.ideal,
-                          Colors.orange,
-                        ),
-                        const SizedBox(height: 12),
-                        OutlinedButton.icon(
-                          onPressed: _viewCareGuide,
-                          icon: const Icon(Icons.menu_book),
-                          label: const Text('상세 케어 가이드 보기'),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(width: AppTheme.spacingMedium),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _selectedSpecies!.commonName,
+                                  style: Theme.of(context).textTheme.titleLarge,
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _selectedSpecies!.scientificName,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                ),
+                                const SizedBox(height: AppTheme.spacingSmall),
+                                Wrap(
+                                  spacing: AppTheme.spacingSmall,
+                                  runSpacing: AppTheme.spacingSmall,
+                                  children: [
+                                    StatusBadge(
+                                      label: _selectedSpecies!.category,
+                                      type: BadgeType.neutral,
+                                    ),
+                                    StatusBadge(
+                                      label: _selectedSpecies!.difficulty,
+                                      type: BadgeType.info,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      const Divider(),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      _buildInfoRow(
+                        Icons.water_drop,
+                        '물주기',
+                        '$_wateringFrequency일마다',
+                        AppTheme.info,
+                      ),
+                      _buildInfoRow(
+                        Icons.wb_sunny,
+                        '햇빛',
+                        _selectedSpecies!.light.requirement,
+                        AppTheme.warning,
+                      ),
+                      _buildInfoRow(
+                        Icons.thermostat,
+                        '온도',
+                        _selectedSpecies!.temperature.ideal,
+                        AppTheme.error,
+                      ),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      OutlinedButton.icon(
+                        onPressed: _viewCareGuide,
+                        icon: const Icon(Icons.menu_book),
+                        label: const Text('상세 케어 가이드 보기'),
+                      ),
+                    ],
                   ),
                 ),
               ],
 
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.spacingLarge),
 
               // 성장 단계 선택
               if (_selectedSpecies != null) ...[
-                Card(
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
+                AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.trending_up, color: AppTheme.success),
+                          const SizedBox(width: AppTheme.spacingSmall),
+                          Text(
+                            '현재 성장 단계',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spacingSmall),
+                      Text(
+                        '식물의 현재 상태를 선택하면 맞춤 케어 정보를 제공합니다',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      Wrap(
+                        spacing: AppTheme.spacingSmall,
+                        runSpacing: AppTheme.spacingSmall,
+                        children: GrowthStage.values.map((stage) {
+                          final isSelected = _selectedGrowthStage == stage;
+                          return ChoiceChip(
+                            label: Text(stage.displayName),
+                            selected: isSelected,
+                            onSelected: (selected) {
+                              if (selected) {
+                                setState(() {
+                                  _selectedGrowthStage = stage;
+                                  _updateWateringFrequency();
+                                });
+                              }
+                            },
+                          );
+                        }).toList(),
+                      ),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      Container(
+                        padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                        decoration: BoxDecoration(
+                          color: AppTheme.success.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Icon(Icons.trending_up, color: Colors.green),
-                            const SizedBox(width: 8),
-                            const Text(
-                              '현재 성장 단계',
-                              style: TextStyle(
-                                fontSize: 16,
+                            Text(
+                              _selectedGrowthStage.displayName,
+                              style: const TextStyle(
                                 fontWeight: FontWeight.bold,
+                                fontSize: 14,
                               ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _selectedGrowthStage.description,
+                              style: const TextStyle(fontSize: 13),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          '식물의 현재 상태를 선택하면 맞춤 케어 정보를 제공합니다',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Wrap(
-                          spacing: 8,
-                          runSpacing: 8,
-                          children: GrowthStage.values.map((stage) {
-                            final isSelected = _selectedGrowthStage == stage;
-                            return ChoiceChip(
-                              label: Text(stage.displayName),
-                              selected: isSelected,
-                              onSelected: (selected) {
-                                if (selected) {
-                                  setState(() {
-                                    _selectedGrowthStage = stage;
-                                    // 성장 단계 변경 시 물주기 자동 조정
-                                    _updateWateringFrequency();
-                                  });
-                                }
-                              },
-                            );
-                          }).toList(),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                _selectedGrowthStage.displayName,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                _selectedGrowthStage.description,
-                                style: const TextStyle(fontSize: 13),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppTheme.spacingMedium),
               ],
 
               // 식물 이름 (별명)
@@ -378,8 +355,7 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                 decoration: const InputDecoration(
                   labelText: '식물 이름 (별명)',
                   hintText: '예: 거실 몬스테라',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.label),
+                  prefixIcon: Icon(Icons.label_outline),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -388,92 +364,63 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.spacingMedium),
 
               // 물주기 주기 조정 (선택사항)
               if (_selectedSpecies != null)
-                Card(
-                  elevation: 2,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.water_drop, color: Colors.blue),
-                            const SizedBox(width: 8),
-                            const Text(
-                              '물주기 주기 조정',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '환경에 따라 조정할 수 있습니다',
+                AppCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.water_drop, color: AppTheme.info),
+                          const SizedBox(width: AppTheme.spacingSmall),
+                          Text(
+                            '물주기 주기 조정',
+                            style: Theme.of(context).textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spacingSmall),
+                      Text(
+                        '환경에 따라 조정할 수 있습니다',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      const SizedBox(height: AppTheme.spacingMedium),
+                      Center(
+                        child: Text(
+                          '$_wateringFrequency일마다',
                           style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: AppTheme.info,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '$_wateringFrequency일마다',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue,
-                              ),
-                            ),
-                            Row(
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle_outline),
-                                  onPressed: _wateringFrequency! > 1
-                                      ? () {
-                                          setState(() {
-                                            _wateringFrequency = _wateringFrequency! - 1;
-                                          });
-                                        }
-                                      : null,
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.add_circle_outline),
-                                  onPressed: () {
-                                    setState(() {
-                                      _wateringFrequency = _wateringFrequency! + 1;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                        Slider(
-                          value: _wateringFrequency!.toDouble(),
-                          min: 1,
-                          max: 30,
-                          divisions: 29,
-                          activeColor: Colors.blue,
-                          label: '$_wateringFrequency일',
-                          onChanged: (value) {
-                            setState(() {
-                              _wateringFrequency = value.round();
-                            });
-                          },
-                        ),
-                      ],
-                    ),
+                      ),
+                      Slider(
+                        value: _wateringFrequency!.toDouble(),
+                        min: 1,
+                        max: 30,
+                        divisions: 29,
+                        label: '$_wateringFrequency일',
+                        onChanged: (value) {
+                          setState(() {
+                            _wateringFrequency = value.round();
+                          });
+                        },
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('1일', style: Theme.of(context).textTheme.bodySmall),
+                          Text('30일', style: Theme.of(context).textTheme.bodySmall),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppTheme.spacingMedium),
 
               // 메모
               TextFormField(
@@ -481,33 +428,23 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                 decoration: const InputDecoration(
                   labelText: '메모 (선택사항)',
                   hintText: '식물의 위치나 특이사항을 적어보세요',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.note),
+                  prefixIcon: Icon(Icons.note_outlined),
                   alignLabelWithHint: true,
                 ),
                 maxLines: 4,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppTheme.spacingLarge),
 
               // 저장 버튼
-              ElevatedButton(
+              ElevatedButton.icon(
                 onPressed: _savePlant,
+                icon: const Icon(Icons.add),
+                label: const Text('식물 추가'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text(
-                  '식물 추가',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
                 ),
               ),
+              const SizedBox(height: AppTheme.spacingLarge),
             ],
           ),
         ),
@@ -517,19 +454,34 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
 
   Widget _buildInfoRow(IconData icon, String label, String value, Color color) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingXSmall),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: color),
-          const SizedBox(width: 8),
-          Text(
-            '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            ),
+            child: Icon(icon, size: 18, color: color),
           ),
+          const SizedBox(width: AppTheme.spacingSmall),
+          Text(
+            label,
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              color: AppTheme.textSecondary,
+            ),
+          ),
+          const SizedBox(width: AppTheme.spacingSmall),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(fontSize: 13),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
