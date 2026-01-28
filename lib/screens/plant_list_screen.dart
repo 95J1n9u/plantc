@@ -430,7 +430,9 @@ class PlantCard extends StatelessWidget {
     }
 
     // 식물 종 정보 가져오기
-    final species = PlantDatabaseService().getSpeciesById(plant.plantSpeciesId);
+    final species = plant.plantSpeciesId != null
+        ? PlantDatabaseService().getSpeciesById(plant.plantSpeciesId!)
+        : null;
 
     if (species == null) {
       // 종 정보가 없으면 성장 단계만 변경
