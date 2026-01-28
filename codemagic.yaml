@@ -16,12 +16,16 @@ workflows:
 
       - name: Archive app
         script: |
-          xcodebuild -workspace ios/Runner.xcworkspace \
+          xcodebuild \
+            -workspace ios/Runner.xcworkspace \
             -scheme Runner \
             -sdk iphoneos \
             -configuration Release \
-            -archivePath build/Runner.xcarchive archive
-
+            DEVELOPMENT_TEAM="" \
+            CODE_SIGN_STYLE=Automatic \
+            archivePath=build/Runner.xcarchive \
+            archive
+            
       - name: Export IPA
         script: |
           xcodebuild -exportArchive \
