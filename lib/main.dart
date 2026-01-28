@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/plant_provider.dart';
-import 'screens/plant_list_screen.dart';
+import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
 import 'services/plant_database_service.dart';
 import 'theme/app_theme.dart';
@@ -29,7 +29,7 @@ class MyApp extends StatelessWidget {
         title: '식물 관리',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.lightTheme(),
-        home: const PlantListScreen(),
+        home: const HomeScreen(),
       ),
     );
   }

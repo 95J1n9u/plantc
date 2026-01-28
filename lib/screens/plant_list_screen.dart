@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -127,7 +128,7 @@ class PlantCard extends StatelessWidget {
             ),
             child: Row(
               children: [
-                // 아이콘
+                // 사진 또는 아이콘
                 Container(
                   width: 56,
                   height: 56,
@@ -136,12 +137,20 @@ class PlantCard extends StatelessWidget {
                         ? AppTheme.error.withOpacity(0.1)
                         : AppTheme.success.withOpacity(0.1),
                     shape: BoxShape.circle,
+                    image: plant.imagePath != null
+                        ? DecorationImage(
+                            image: FileImage(File(plant.imagePath!)),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
                   ),
-                  child: Icon(
-                    Icons.local_florist,
-                    color: needsWater ? AppTheme.error : AppTheme.success,
-                    size: 28,
-                  ),
+                  child: plant.imagePath == null
+                      ? Icon(
+                          Icons.local_florist,
+                          color: needsWater ? AppTheme.error : AppTheme.success,
+                          size: 28,
+                        )
+                      : null,
                 ),
                 const SizedBox(width: AppTheme.spacingMedium),
                 // 정보

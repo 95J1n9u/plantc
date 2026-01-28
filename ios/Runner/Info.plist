@@ -47,5 +47,9 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>식물이 있는 위치의 광량을 측정하기 위해 카메라가 필요합니다</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>식물 사진을 추가하기 위해 갤러리 접근 권한이 필요합니다</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>식물 사진을 저장하기 위해 갤러리 접근 권한이 필요합니다</string>
 </dict>
 </plist>

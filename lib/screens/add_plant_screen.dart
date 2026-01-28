@@ -1,5 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../models/plant.dart';
 import '../models/plant_species.dart';
 import '../providers/plant_provider.dart';
@@ -20,16 +24,84 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _notesController = TextEditingController();
+  final _imagePicker = ImagePicker();
 
   PlantSpecies? _selectedSpecies;
   GrowthStage _selectedGrowthStage = GrowthStage.mature; // 기본값: 성숙
   int? _wateringFrequency;
+  XFile? _selectedImage;
 
   @override
   void dispose() {
     _nameController.dispose();
     _notesController.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: source,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+
+      if (image != null) {
+        setState(() {
+          _selectedImage = image;
+        });
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('사진을 불러올 수 없습니다: $e'),
+          backgroundColor: AppTheme.error,
+        ),
+      );
+    }
+  }
+
+  void _showImageSourceDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('사진 선택'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('카메라로 촬영'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.camera);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('갤러리에서 선택'),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage(ImageSource.gallery);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<String?> _saveImagePermanently(XFile image) async {
+    try {
+      final appDir = await getApplicationDocumentsDirectory();
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}${path.extension(image.path)}';
+      final savedImage = File('${appDir.path}/$fileName');
+      await File(image.path).copy(savedImage.path);
+      return savedImage.path;
+    } catch (e) {
+      return null;
+    }
   }
 
   void _selectPlantSpecies() async {
@@ -84,7 +156,7 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
     }
   }
 
-  void _savePlant() {
+  Future<void> _savePlant() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedSpecies == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -102,6 +174,12 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
         return;
       }
 
+      // 이미지 저장
+      String? imagePath;
+      if (_selectedImage != null) {
+        imagePath = await _saveImagePermanently(_selectedImage!);
+      }
+
       final now = DateTime.now();
       final nextWatering = now.add(Duration(days: _wateringFrequency!));
 
@@ -113,6 +191,7 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
         wateringFrequency: _wateringFrequency!,
         lastWateredDate: now,
         nextWateringDate: nextWatering,
+        imagePath: imagePath,
         notes: _notesController.text.isEmpty ? null : _notesController.text,
       );
 
@@ -276,6 +355,72 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
               ],
 
               const SizedBox(height: AppTheme.spacingLarge),
+
+              // 사진 추가
+              AppCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.photo_camera, color: AppTheme.primary),
+                        const SizedBox(width: AppTheme.spacingSmall),
+                        Text(
+                          '식물 사진 (선택사항)',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppTheme.spacingMedium),
+                    if (_selectedImage != null) ...[
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(AppTheme.radiusMedium),
+                            child: Image.file(
+                              File(_selectedImage!.path),
+                              width: double.infinity,
+                              height: 200,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: CircleAvatar(
+                              backgroundColor: Colors.black54,
+                              child: IconButton(
+                                icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                                onPressed: () {
+                                  setState(() {
+                                    _selectedImage = null;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppTheme.spacingSmall),
+                      OutlinedButton.icon(
+                        onPressed: _showImageSourceDialog,
+                        icon: const Icon(Icons.edit),
+                        label: const Text('사진 변경'),
+                      ),
+                    ] else ...[
+                      OutlinedButton.icon(
+                        onPressed: _showImageSourceDialog,
+                        icon: const Icon(Icons.add_a_photo),
+                        label: const Text('사진 추가하기'),
+                        style: OutlinedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 50),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppTheme.spacingMedium),
 
               // 성장 단계 선택
               if (_selectedSpecies != null) ...[
