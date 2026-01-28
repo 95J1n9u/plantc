@@ -40,14 +40,34 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
     if (result != null) {
       setState(() {
         _selectedSpecies = result;
-        // 현재 계절에 맞는 물주기 주기 자동 설정
-        _wateringFrequency = result.watering.season.getCurrentSeasonFrequency();
+        // 현재 계절 및 성장 단계에 맞는 물주기 주기 자동 설정
+        _updateWateringFrequency();
         // 식물 이름 자동 입력 (수정 가능)
         if (_nameController.text.isEmpty) {
           _nameController.text = result.commonName;
         }
       });
     }
+  }
+
+  // 성장 단계에 따라 물주기 주기 계산
+  void _updateWateringFrequency() {
+    if (_selectedSpecies == null) return;
+
+    // 기본 물주기 (현재 계절 기준)
+    int baseFrequency = _selectedSpecies!.watering.season.getCurrentSeasonFrequency();
+
+    // 성장 단계별 조정 적용
+    if (_selectedSpecies!.growthStageGuides != null) {
+      final guide = _selectedSpecies!.growthStageGuides![_selectedGrowthStage.name];
+      if (guide != null && guide.wateringAdjustment != null) {
+        baseFrequency += guide.wateringAdjustment!;
+        // 최소 1일 보장
+        if (baseFrequency < 1) baseFrequency = 1;
+      }
+    }
+
+    _wateringFrequency = baseFrequency;
   }
 
   void _viewCareGuide() {
@@ -312,6 +332,8 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                                 if (selected) {
                                   setState(() {
                                     _selectedGrowthStage = stage;
+                                    // 성장 단계 변경 시 물주기 자동 조정
+                                    _updateWateringFrequency();
                                   });
                                 }
                               },
