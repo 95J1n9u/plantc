@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/plant_species.dart';
 import '../models/plant.dart';
+import '../theme/app_theme.dart';
+import '../widgets/app_card.dart';
+import '../widgets/status_badge.dart';
 
 class PlantCareGuideScreen extends StatefulWidget {
   final PlantSpecies species;
@@ -28,9 +31,10 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: Text(widget.species.commonName),
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        elevation: 0,
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -78,30 +82,60 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
   Widget _buildHeader(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 200,
-      color: Colors.green[100],
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            AppTheme.primary.withOpacity(0.1),
+            AppTheme.background,
+          ],
+        ),
+      ),
+      padding: const EdgeInsets.all(AppTheme.spacingXLarge),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            _getCategoryIcon(),
-            size: 80,
-            color: Colors.green[700],
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.primary.withOpacity(0.2),
+                  AppTheme.primary.withOpacity(0.1),
+                ],
+              ),
+              border: Border.all(
+                color: AppTheme.primary.withOpacity(0.3),
+                width: 2,
+              ),
+            ),
+            child: Icon(
+              _getCategoryIcon(),
+              size: 64,
+              color: AppTheme.primary,
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingMedium),
           Text(
             widget.species.commonName,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
+              color: AppTheme.textPrimary,
             ),
           ),
+          const SizedBox(height: AppTheme.spacingXSmall),
           Text(
             widget.species.scientificName,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 14,
               fontStyle: FontStyle.italic,
-              color: Colors.grey[700],
+              color: AppTheme.textSecondary,
             ),
           ),
         ],
@@ -111,57 +145,76 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
 
   Widget _buildBasicInfo(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '기본 정보',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 12),
-          _buildInfoRow(Icons.category, '카테고리', widget.species.category),
-          _buildInfoRow(Icons.signal_cellular_alt, '난이도', widget.species.difficulty),
-          _buildInfoRow(Icons.speed, '성장 속도', widget.species.growthRate),
-          _buildInfoRow(Icons.height, '크기 (실내)', widget.species.size.indoor),
-          if (widget.species.isEdible == true)
-            _buildInfoRow(Icons.restaurant, '식용', '예 (${widget.species.harvestTime ?? "수확 가능"})'),
-          _buildInfoRow(
-            Icons.pets,
-            '반려동물',
-            widget.species.toxicity.pets ? '독성 있음 ⚠️' : '안전',
-          ),
-          if (widget.species.toxicity.description.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(left: 40, top: 4),
-              child: Text(
-                widget.species.toxicity.description,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
+      padding: const EdgeInsets.all(AppTheme.spacingMedium),
+      child: AppCard(
+        elevated: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.info_outline, color: AppTheme.primary, size: 24),
+                const SizedBox(width: AppTheme.spacingSmall),
+                Text(
+                  '기본 정보',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppTheme.textPrimary,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppTheme.spacingMedium),
+            _buildInfoRow(Icons.category, '카테고리', widget.species.category),
+            _buildInfoRow(Icons.signal_cellular_alt, '난이도', widget.species.difficulty),
+            _buildInfoRow(Icons.speed, '성장 속도', widget.species.growthRate),
+            _buildInfoRow(Icons.height, '크기 (실내)', widget.species.size.indoor),
+            if (widget.species.isEdible == true)
+              _buildInfoRow(Icons.restaurant, '식용', '예 (${widget.species.harvestTime ?? "수확 가능"})'),
+            _buildInfoRow(
+              Icons.pets,
+              '반려동물',
+              widget.species.toxicity.pets ? '독성 있음 ⚠️' : '안전',
+            ),
+            if (widget.species.toxicity.description.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(left: 40, top: 4),
+                child: Text(
+                  widget.species.toxicity.description,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppTheme.textSecondary,
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCareInfo(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMedium),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '케어 정보',
-            style: Theme.of(context).textTheme.titleLarge,
+          Row(
+            children: [
+              Icon(Icons.water_drop, color: AppTheme.info, size: 24),
+              const SizedBox(width: AppTheme.spacingSmall),
+              Text(
+                '케어 정보',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: AppTheme.textPrimary,
+                    ),
+              ),
+            ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppTheme.spacingMedium),
 
           // 물주기
           _buildWateringCard(context),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.spacingMedium),
 
           // 햇빛
           _buildCareCard(
@@ -171,9 +224,9 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
             frequency: widget.species.light.requirement,
             description: widget.species.light.description,
             tips: widget.species.light.tips,
-            color: Colors.amber,
+            color: AppTheme.warning,
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.spacingMedium),
 
           // 비료
           _buildFertilizingCard(context),
@@ -184,36 +237,55 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
 
   Widget _buildEnvironmentInfo(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '환경 조건',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 12),
-          _buildInfoRow(Icons.thermostat, '온도', widget.species.temperature.ideal),
-          _buildInfoRow(Icons.opacity, '습도', widget.species.humidity.level),
-          _buildInfoRow(Icons.grass, '흙', widget.species.soil.type),
-          _buildInfoRow(Icons.content_cut, '가지치기', widget.species.pruning.frequency),
-          _buildInfoRow(Icons.move_up, '분갈이', widget.species.repotting.frequency),
-        ],
+      padding: const EdgeInsets.all(AppTheme.spacingMedium),
+      child: AppCard(
+        elevated: true,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.thermostat, color: AppTheme.error, size: 24),
+                const SizedBox(width: AppTheme.spacingSmall),
+                Text(
+                  '환경 조건',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppTheme.textPrimary,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppTheme.spacingMedium),
+            _buildInfoRow(Icons.thermostat, '온도', widget.species.temperature.ideal),
+            _buildInfoRow(Icons.opacity, '습도', widget.species.humidity.level),
+            _buildInfoRow(Icons.grass, '흙', widget.species.soil.type),
+            _buildInfoRow(Icons.content_cut, '가지치기', widget.species.pruning.frequency),
+            _buildInfoRow(Icons.move_up, '분갈이', widget.species.repotting.frequency),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildProblems(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(horizontal: AppTheme.spacingMedium),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '흔한 문제 & 해결책',
-            style: Theme.of(context).textTheme.titleLarge,
+          Row(
+            children: [
+              Icon(Icons.warning_amber_rounded, color: AppTheme.warning, size: 24),
+              const SizedBox(width: AppTheme.spacingSmall),
+              Text(
+                '흔한 문제 & 해결책',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: AppTheme.textPrimary,
+                    ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppTheme.spacingMedium),
           ...widget.species.commonProblems.map((problem) => _buildProblemCard(problem)),
         ],
       ),
@@ -222,40 +294,60 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
 
   Widget _buildCareGuide(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppTheme.spacingMedium),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '초보자 가이드',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 12),
-          Card(
-            color: Colors.green[50],
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.species.careGuide.beginner,
-                    style: const TextStyle(fontSize: 14),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    '추천 위치',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(widget.species.careGuide.placement),
-                  const SizedBox(height: 12),
-                  const Text(
-                    '특별 팁',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(widget.species.careGuide.specialTips),
-                ],
+          Row(
+            children: [
+              Icon(Icons.lightbulb_outline, color: AppTheme.success, size: 24),
+              const SizedBox(width: AppTheme.spacingSmall),
+              Text(
+                '초보자 가이드',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: AppTheme.textPrimary,
+                    ),
               ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+          AppCard(
+            elevated: true,
+            color: AppTheme.success.withOpacity(0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.species.careGuide.beginner,
+                  style: const TextStyle(fontSize: 14, color: AppTheme.textPrimary),
+                ),
+                const SizedBox(height: AppTheme.spacingMedium),
+                const Text(
+                  '추천 위치',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacingXSmall),
+                Text(
+                  widget.species.careGuide.placement,
+                  style: const TextStyle(color: AppTheme.textSecondary),
+                ),
+                const SizedBox(height: AppTheme.spacingMedium),
+                const Text(
+                  '특별 팁',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacingXSmall),
+                Text(
+                  widget.species.careGuide.specialTips,
+                  style: const TextStyle(color: AppTheme.textSecondary),
+                ),
+              ],
             ),
           ),
         ],
@@ -266,44 +358,62 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
   Widget _buildHarvestInfo(BuildContext context) {
     final harvest = widget.species.harvest!;
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(AppTheme.spacingMedium),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '수확 정보',
-            style: Theme.of(context).textTheme.titleLarge,
+          Row(
+            children: [
+              Icon(Icons.agriculture, color: AppTheme.warning, size: 24),
+              const SizedBox(width: AppTheme.spacingSmall),
+              Text(
+                '수확 정보',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      color: AppTheme.textPrimary,
+                    ),
+              ),
+            ],
           ),
-          const SizedBox(height: 12),
-          Card(
-            color: Colors.orange[50],
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildInfoRow(Icons.schedule, '수확 시기', harvest.when),
-                  _buildInfoRow(Icons.cut, '수확 방법', harvest.how),
-                  _buildInfoRow(Icons.repeat, '수확 빈도', harvest.frequency),
-                  if (harvest.tips != null) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.orange[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.tips_and_updates, size: 20),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(harvest.tips!)),
-                        ],
+          const SizedBox(height: AppTheme.spacingMedium),
+          AppCard(
+            elevated: true,
+            color: AppTheme.warning.withOpacity(0.05),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildInfoRow(Icons.schedule, '수확 시기', harvest.when),
+                _buildInfoRow(Icons.cut, '수확 방법', harvest.how),
+                _buildInfoRow(Icons.repeat, '수확 빈도', harvest.frequency),
+                if (harvest.tips != null) ...[
+                  const SizedBox(height: AppTheme.spacingMedium),
+                  Container(
+                    padding: const EdgeInsets.all(AppTheme.spacingMedium),
+                    decoration: BoxDecoration(
+                      color: AppTheme.warning.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                      border: Border.all(
+                        color: AppTheme.warning.withOpacity(0.3),
                       ),
                     ),
-                  ],
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.tips_and_updates,
+                          size: 20,
+                          color: AppTheme.warning,
+                        ),
+                        const SizedBox(width: AppTheme.spacingSmall),
+                        Expanded(
+                          child: Text(
+                            harvest.tips!,
+                            style: const TextStyle(color: AppTheme.textPrimary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
+              ],
             ),
           ),
         ],
@@ -313,16 +423,35 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: AppTheme.spacingXSmall),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey[600]),
-          const SizedBox(width: 12),
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: AppTheme.primary.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+            ),
+            child: Icon(icon, size: 18, color: AppTheme.primary),
+          ),
+          const SizedBox(width: AppTheme.spacingSmall),
           Text(
             '$label: ',
-            style: const TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+              color: AppTheme.textSecondary,
+            ),
           ),
-          Expanded(child: Text(value)),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppTheme.textPrimary,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -337,17 +466,24 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
     required String tips,
     required Color color,
   }) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(icon, color: color, size: 28),
-                const SizedBox(width: 12),
-                Column(
+    return AppCard(
+      elevated: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: AppTheme.spacingMedium),
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
@@ -355,60 +491,81 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       frequency,
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.grey[600],
+                        color: color,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(description),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
               ),
-              child: Row(
-                children: [
-                  Icon(Icons.lightbulb_outline, size: 16, color: color),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      tips,
-                      style: const TextStyle(fontSize: 12),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+          Text(
+            description,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingSmall),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              border: Border.all(color: color.withOpacity(0.3)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.lightbulb_outline, size: 16, color: color),
+                const SizedBox(width: AppTheme.spacingSmall),
+                Expanded(
+                  child: Text(
+                    tips,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildWateringCard(BuildContext context) {
     final currentSeasonFrequency = widget.species.watering.season.getCurrentSeasonFrequency();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.water_drop, color: Colors.blue, size: 28),
-                const SizedBox(width: 12),
-                Column(
+    return AppCard(
+      elevated: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppTheme.info.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
+                child: Icon(Icons.water_drop, color: AppTheme.info, size: 24),
+              ),
+              const SizedBox(width: AppTheme.spacingMedium),
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
@@ -416,91 +573,116 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       '$currentSeasonFrequency일마다 (현재 계절 기준)',
                       style: TextStyle(
                         fontSize: 14,
-                        color: Colors.blue[700],
-                        fontWeight: FontWeight.bold,
+                        color: AppTheme.info,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+          Text(
+            widget.species.watering.description,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+
+          // 계절별 물주기
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
+            decoration: BoxDecoration(
+              color: AppTheme.info.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              border: Border.all(color: AppTheme.info.withOpacity(0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '계절별 물주기 주기',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacingSmall),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildSeasonChip('봄', widget.species.watering.season.spring, Icons.local_florist),
+                    _buildSeasonChip('여름', widget.species.watering.season.summer, Icons.wb_sunny),
+                    _buildSeasonChip('가을', widget.species.watering.season.fall, Icons.eco),
+                    _buildSeasonChip('겨울', widget.species.watering.season.winter, Icons.ac_unit),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(widget.species.watering.description),
-            const SizedBox(height: 12),
-
-            // 계절별 물주기
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.blue.withOpacity(0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '계절별 물주기 주기',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildSeasonChip('봄', widget.species.watering.season.spring, Icons.local_florist),
-                      _buildSeasonChip('여름', widget.species.watering.season.summer, Icons.wb_sunny),
-                      _buildSeasonChip('가을', widget.species.watering.season.fall, Icons.eco),
-                      _buildSeasonChip('겨울', widget.species.watering.season.winter, Icons.ac_unit),
-                    ],
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingSmall),
+            decoration: BoxDecoration(
+              color: AppTheme.info.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              border: Border.all(color: AppTheme.info.withOpacity(0.3)),
             ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.lightbulb_outline, size: 16, color: Colors.blue),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.species.watering.tips,
-                      style: const TextStyle(fontSize: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(Icons.lightbulb_outline, size: 16, color: AppTheme.info),
+                const SizedBox(width: AppTheme.spacingSmall),
+                Expanded(
+                  child: Text(
+                    widget.species.watering.tips,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFertilizingCard(BuildContext context) {
     final currentSeasonFrequency = widget.species.fertilizing.season.getCurrentSeasonFrequency();
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.science, color: Colors.brown, size: 28),
-                const SizedBox(width: 12),
-                Column(
+    const fertilizeColor = Color(0xFF8D6E63); // Brown color
+    return AppCard(
+      elevated: true,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: fertilizeColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                ),
+                child: const Icon(Icons.science, color: fertilizeColor, size: 24),
+              ),
+              const SizedBox(width: AppTheme.spacingMedium),
+              Expanded(
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
@@ -508,76 +690,93 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        color: AppTheme.textPrimary,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
                       currentSeasonFrequency == 0
                         ? '비료 주지 않음 (현재 계절)'
                         : '$currentSeasonFrequency일마다 (현재 계절 기준)',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
-                        color: Colors.brown[700],
-                        fontWeight: FontWeight.bold,
+                        color: fertilizeColor,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+          Text(
+            '${widget.species.fertilizing.description} (종류: ${widget.species.fertilizing.type})',
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppTheme.textPrimary,
+            ),
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+
+          // 계절별 비료
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
+            decoration: BoxDecoration(
+              color: fertilizeColor.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              border: Border.all(color: fertilizeColor.withOpacity(0.2)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  '계절별 비료 주기',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: AppTheme.spacingSmall),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildSeasonChip('봄', widget.species.fertilizing.season.spring, Icons.local_florist),
+                    _buildSeasonChip('여름', widget.species.fertilizing.season.summer, Icons.wb_sunny),
+                    _buildSeasonChip('가을', widget.species.fertilizing.season.fall, Icons.eco),
+                    _buildSeasonChip('겨울', widget.species.fertilizing.season.winter, Icons.ac_unit),
+                  ],
+                ),
               ],
             ),
-            const SizedBox(height: 12),
-            Text('${widget.species.fertilizing.description} (종류: ${widget.species.fertilizing.type})'),
-            const SizedBox(height: 12),
-
-            // 계절별 비료
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.brown.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.brown.withOpacity(0.2)),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '계절별 비료 주기',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildSeasonChip('봄', widget.species.fertilizing.season.spring, Icons.local_florist),
-                      _buildSeasonChip('여름', widget.species.fertilizing.season.summer, Icons.wb_sunny),
-                      _buildSeasonChip('가을', widget.species.fertilizing.season.fall, Icons.eco),
-                      _buildSeasonChip('겨울', widget.species.fertilizing.season.winter, Icons.ac_unit),
-                    ],
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(height: AppTheme.spacingMedium),
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingSmall),
+            decoration: BoxDecoration(
+              color: fertilizeColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+              border: Border.all(color: fertilizeColor.withOpacity(0.3)),
             ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.brown.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.lightbulb_outline, size: 16, color: Colors.brown),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      widget.species.fertilizing.tips,
-                      style: const TextStyle(fontSize: 12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Icon(Icons.lightbulb_outline, size: 16, color: fertilizeColor),
+                const SizedBox(width: AppTheme.spacingSmall),
+                Expanded(
+                  child: Text(
+                    widget.species.fertilizing.tips,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -596,7 +795,7 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
         Icon(
           icon,
           size: 20,
-          color: isCurrentSeason ? Colors.blue : Colors.grey,
+          color: isCurrentSeason ? AppTheme.primary : AppTheme.textSecondary,
         ),
         const SizedBox(height: 4),
         Text(
@@ -604,14 +803,14 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
           style: TextStyle(
             fontSize: 11,
             fontWeight: isCurrentSeason ? FontWeight.bold : FontWeight.normal,
-            color: isCurrentSeason ? Colors.blue : Colors.grey[700],
+            color: isCurrentSeason ? AppTheme.primary : AppTheme.textSecondary,
           ),
         ),
         const SizedBox(height: 2),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
           decoration: BoxDecoration(
-            color: isCurrentSeason ? Colors.blue : Colors.grey[200],
+            color: isCurrentSeason ? AppTheme.primary : AppTheme.surfaceVariant,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
@@ -619,7 +818,7 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: isCurrentSeason ? Colors.white : Colors.grey[700],
+              color: isCurrentSeason ? Colors.white : AppTheme.textSecondary,
             ),
           ),
         ),
@@ -628,49 +827,72 @@ class _PlantCareGuideScreenState extends State<PlantCareGuideScreen> {
   }
 
   Widget _buildProblemCard(CommonProblem problem) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppTheme.spacingMedium),
+      child: AppCard(
+        elevated: true,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(Icons.warning_amber, color: Colors.orange),
-                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.warning.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                  ),
+                  child: Icon(
+                    Icons.warning_amber,
+                    color: AppTheme.warning,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacingSmall),
                 Expanded(
                   child: Text(
                     problem.symptom,
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
+                      color: AppTheme.textPrimary,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.spacingMedium),
             Text(
               '원인: ${problem.causes.join(", ")}',
-              style: TextStyle(color: Colors.grey[700]),
+              style: const TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 14,
+              ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppTheme.spacingMedium),
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(AppTheme.spacingSmall),
               decoration: BoxDecoration(
-                color: Colors.green[50],
-                borderRadius: BorderRadius.circular(8),
+                color: AppTheme.success.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+                border: Border.all(color: AppTheme.success.withOpacity(0.3)),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.check_circle, color: Colors.green, size: 20),
-                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.check_circle,
+                    color: AppTheme.success,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppTheme.spacingSmall),
                   Expanded(
                     child: Text(
                       problem.solution,
-                      style: const TextStyle(fontSize: 14),
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.textPrimary,
+                      ),
                     ),
                   ),
                 ],
