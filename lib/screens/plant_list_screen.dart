@@ -5,6 +5,10 @@ import '../providers/plant_provider.dart';
 import '../models/plant.dart';
 import '../models/plant_species.dart';
 import '../services/plant_database_service.dart';
+import '../theme/app_theme.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/app_card.dart';
+import '../widgets/status_badge.dart';
 import 'add_plant_screen.dart';
 import 'light_meter_screen.dart';
 
@@ -27,13 +31,12 @@ class _PlantListScreenState extends State<PlantListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
         title: const Text('내 식물들'),
-        backgroundColor: Colors.green,
-        foregroundColor: Colors.white,
         actions: [
           IconButton(
-            icon: const Icon(Icons.wb_sunny),
+            icon: const Icon(Icons.wb_sunny_outlined),
             tooltip: '광량계',
             onPressed: () {
               Navigator.push(
@@ -53,38 +56,24 @@ class _PlantListScreenState extends State<PlantListScreen> {
           }
 
           if (plantProvider.plants.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.eco,
-                    size: 100,
-                    color: Colors.grey[300],
+            return EmptyState(
+              icon: Icons.eco,
+              title: '식물이 없습니다',
+              subtitle: '첫 식물을 추가해서\n물주기 알림을 받아보세요',
+              actionLabel: '식물 추가하기',
+              onAction: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AddPlantScreen(),
                   ),
-                  const SizedBox(height: 20),
-                  Text(
-                    '아직 등록된 식물이 없습니다',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    '+ 버튼을 눌러 식물을 추가해보세요',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             );
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
             itemCount: plantProvider.plants.length,
             itemBuilder: (context, index) {
               final plant = plantProvider.plants[index];
@@ -93,7 +82,7 @@ class _PlantListScreenState extends State<PlantListScreen> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
@@ -102,8 +91,8 @@ class _PlantListScreenState extends State<PlantListScreen> {
             ),
           );
         },
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.add, color: Colors.white),
+        icon: const Icon(Icons.add),
+        label: const Text('식물 추가'),
       ),
     );
   }
@@ -119,101 +108,127 @@ class PlantCard extends StatelessWidget {
     final daysUntil = plant.daysUntilWatering;
     final needsWater = plant.needsWatering;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      elevation: 2,
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: CircleAvatar(
-          backgroundColor: needsWater ? Colors.red[100] : Colors.green[100],
-          radius: 30,
-          child: Icon(
-            Icons.local_florist,
-            color: needsWater ? Colors.red : Colors.green,
-            size: 30,
-          ),
-        ),
-        title: Text(
-          plant.name,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                Text(
-                  plant.species,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    plant.growthStage.displayName,
-                    style: const TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.green,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  Icons.water_drop,
-                  size: 16,
-                  color: needsWater ? Colors.red : Colors.blue,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  needsWater
-                      ? '물 주세요! (${daysUntil.abs()}일 지남)'
-                      : daysUntil == 0
-                          ? '오늘 물 주기'
-                          : '$daysUntil일 후 물 주기',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: needsWater ? Colors.red : Colors.grey[700],
-                    fontWeight: needsWater ? FontWeight.bold : FontWeight.normal,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '마지막 물 준 날짜: ${DateFormat('yyyy-MM-dd').format(plant.lastWateredDate)}',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[500],
+    return AppCard(
+      padding: EdgeInsets.zero,
+      onTap: () => _showPlantDetails(context, plant),
+      child: Column(
+        children: [
+          // 상단 헤더 영역
+          Container(
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
+            decoration: BoxDecoration(
+              color: needsWater
+                  ? AppTheme.error.withOpacity(0.05)
+                  : AppTheme.primary.withOpacity(0.05),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(AppTheme.radiusMedium),
+                topRight: Radius.circular(AppTheme.radiusMedium),
               ),
             ),
-          ],
-        ),
-        trailing: IconButton(
-          icon: const Icon(Icons.water_drop_outlined, color: Colors.blue),
-          iconSize: 30,
-          onPressed: () {
-            _showWaterConfirmDialog(context, plant);
-          },
-        ),
-        onTap: () {
-          _showPlantDetails(context, plant);
-        },
+            child: Row(
+              children: [
+                // 아이콘
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    color: needsWater
+                        ? AppTheme.error.withOpacity(0.1)
+                        : AppTheme.success.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.local_florist,
+                    color: needsWater ? AppTheme.error : AppTheme.success,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: AppTheme.spacingMedium),
+                // 정보
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        plant.name,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        plant.species,
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                    ],
+                  ),
+                ),
+                // 물주기 버튼
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.info.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.water_drop,
+                      color: AppTheme.info,
+                    ),
+                    onPressed: () => _showWaterConfirmDialog(context, plant),
+                    tooltip: '물주기',
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // 하단 정보 영역
+          Padding(
+            padding: const EdgeInsets.all(AppTheme.spacingMedium),
+            child: Column(
+              children: [
+                // 성장 단계와 물주기 정보
+                Row(
+                  children: [
+                    StatusBadge(
+                      label: plant.growthStage.displayName,
+                      icon: Icons.trending_up,
+                      type: BadgeType.success,
+                    ),
+                    const SizedBox(width: AppTheme.spacingSmall),
+                    Expanded(
+                      child: StatusBadge(
+                        label: needsWater
+                            ? '물 주세요! (${daysUntil.abs()}일 지남)'
+                            : daysUntil == 0
+                                ? '오늘 물주기'
+                                : '$daysUntil일 후',
+                        icon: Icons.water_drop,
+                        type: needsWater ? BadgeType.error : BadgeType.info,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppTheme.spacingSmall),
+                // 마지막 물 준 날짜
+                Row(
+                  children: [
+                    Icon(
+                      Icons.history,
+                      size: 14,
+                      color: AppTheme.textSecondary,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '마지막: ${DateFormat('M월 d일').format(plant.lastWateredDate)}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

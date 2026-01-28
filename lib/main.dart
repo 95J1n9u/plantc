@@ -4,6 +4,7 @@ import 'providers/plant_provider.dart';
 import 'screens/plant_list_screen.dart';
 import 'services/notification_service.dart';
 import 'services/plant_database_service.dart';
+import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,10 +28,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         title: '식물 관리',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme(),
         home: const PlantListScreen(),
       ),
     );
