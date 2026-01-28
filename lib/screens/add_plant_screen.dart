@@ -408,12 +408,12 @@ class _AddPlantScreenState extends State<AddPlantScreen> {
                         label: const Text('사진 변경'),
                       ),
                     ] else ...[
-                      OutlinedButton.icon(
-                        onPressed: _showImageSourceDialog,
-                        icon: const Icon(Icons.add_a_photo),
-                        label: const Text('사진 추가하기'),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(double.infinity, 50),
+                      SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton.icon(
+                          onPressed: _showImageSourceDialog,
+                          icon: const Icon(Icons.add_a_photo),
+                          label: const Text('사진 추가하기'),
                         ),
                       ),
                     ],
