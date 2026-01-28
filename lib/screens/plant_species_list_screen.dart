@@ -201,7 +201,7 @@ class _PlantSpeciesListScreenState extends State<PlantSpeciesListScreen> {
                 ? EmptyState(
                     icon: Icons.search_off,
                     title: '검색 결과가 없습니다',
-                    message: '다른 검색어로 시도해보세요',
+                    subtitle: '다른 검색어로 시도해보세요',
                   )
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(

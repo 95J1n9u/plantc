@@ -22,6 +22,9 @@ class AppTheme {
   static const Color textSecondary = Color(0xFF757575);
   static const Color textDisabled = Color(0xFFBDBDBD);
 
+  // 구분선 색상
+  static const Color divider = Color(0xFFE0E0E0);
+
   // 그림자
   static List<BoxShadow> cardShadow = [
     BoxShadow(
