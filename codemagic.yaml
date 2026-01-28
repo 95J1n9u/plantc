@@ -5,6 +5,8 @@ workflows:
     environment:
       flutter: stable
       xcode: latest
+      groups:
+      - app_store_credentials
     scripts:
       - name: Flutter pub get
         script: flutter pub get
