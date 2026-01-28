@@ -6,6 +6,7 @@ import '../models/plant.dart';
 import '../models/plant_species.dart';
 import '../services/plant_database_service.dart';
 import 'add_plant_screen.dart';
+import 'light_meter_screen.dart';
 
 class PlantListScreen extends StatefulWidget {
   const PlantListScreen({super.key});
@@ -30,6 +31,20 @@ class _PlantListScreenState extends State<PlantListScreen> {
         title: const Text('내 식물들'),
         backgroundColor: Colors.green,
         foregroundColor: Colors.white,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.wb_sunny),
+            tooltip: '광량계',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LightMeterScreen(),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: Consumer<PlantProvider>(
         builder: (context, plantProvider, child) {
@@ -271,16 +286,41 @@ class PlantCard extends StatelessWidget {
                   ],
                 ),
                 const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    _showGrowthStageChangeDialog(context, plant);
-                  },
-                  icon: const Icon(Icons.edit, size: 16),
-                  label: const Text('성장 단계 변경'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showGrowthStageChangeDialog(context, plant);
+                        },
+                        icon: const Icon(Icons.edit, size: 16),
+                        label: const Text('성장 단계 변경'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LightMeterScreen(plant: plant),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.wb_sunny, size: 16),
+                        label: const Text('광량 측정'),
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 12),
                 const Divider(),
